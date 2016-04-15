@@ -1,0 +1,12 @@
+﻿Der Buildvorgang wurde am 13.03.2016 18:19:17 gestartet.
+     1>Projekt "E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.vcxproj" auf Knoten "2", Build Ziel(e).
+     1>Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\x64\Debug\ConsoleApplication1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\Microsoft MPI\Lib\amd64" msmpi.lib msmpifec.lib msmpifmc.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\x64\Debug\ConsoleApplication1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\x64\Debug\ConsoleApplication1.lib" /MACHINE:X64 x64\Debug\ConsoleApplication1.obj
+         x64\Debug\stdafx.obj
+         LINK : E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\x64\Debug\ConsoleApplication1.exe wurde nicht gefunden oder beim letzten inkrementellen Linkvorgang nicht erstellt; vollständiger Link wird durchgeführt.
+         ConsoleApplication1.vcxproj -> E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\x64\Debug\ConsoleApplication1.exe
+     1>Die Erstellung von Projekt "E:\Daten\Dublin\Kurse\DistributedSystems\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.vcxproj" ist abgeschlossen (Build Ziel(e)).
+
+Der Buildvorgang wurde erfolgreich ausgeführt.
+
+Verstrichene Zeit 00:00:00.45
