@@ -1,13 +1,15 @@
 // ConsoleApplication1.cpp
-// use monte carlo to calculate pi
-/** simple program to test the MPI stuff to see if it works **/
+// parallel matrix multiplier using many nodes
+
 /** includes **/
-#include "stdafx.h"
+#include "stdafx.h" // visual studio only
 #include <iostream>
 #include <mpi.h>
-#include <stdlib.h>    
-#include <random>
-#include <chrono>
+#include <stdlib.h>   
+#include <cstdlib>
+#include <cmath>
+
+
 
 int world_rank;
 
@@ -17,93 +19,147 @@ double fRand(double fMin, double fMax)
 	return fMin + f * (fMax - fMin);
 }
 
-
-int calculateHits(int iterations)
+template <size_t sizeRow, size_t sizeColumn>
+void initIntMatrix(int(&arr)[sizeRow][sizeColumn])
 {
-	double x = 0;
-	double y = 0; 
-	double z = 0;
-	int i = 0;
-	int hits = 0;
-
-	// random 
-	std::mt19937_64 rng;
-	// init the random generator with seed
-	uint64_t timeSeed = std::chrono::high_resolution_clock::now().time_since_epoch().count()*world_rank;
-	std::seed_seq ss{ uint32_t(timeSeed & 0xffffffff), uint32_t(timeSeed >> 32) };
-	rng.seed(ss);
-	// initialize a uniform distribution between 0 and 1
-	std::uniform_real_distribution<double> unif(-1, 1);
-
-	for (i = 0; i<iterations; i++) 
+	for (int i = 0; i < sizeRow; i++)
 	{
-		
-		x = unif(rng);
-		y = unif(rng);
-		z = x*x + y*y;
-		if (z <= 1)
+		for (int j = 0; j < sizeColumn; j++)
 		{
-			hits++;
+			arr[i][j] = (int) fRand(0,50);
 		}
 	}
-	return hits;
 }
 
-/* master node method */
-void coordinator(int iterations, int world_size)
+#pragma warning (disable : 4996) // visual studio does not compile fopen because of security  
+void printMatrixFromFile() 
 {
-	double pi;
-	int hits = 0;
-	int total_hits;
+	double matrix[64];
+	FILE *input = fopen("matrix.dat", "rd");
+	if (!input) {
+		return;
+	}
+	fread(matrix, sizeof(double), 64, input);
+	fclose(input);
+	for (int i = 0; i < 64; ++i) {
+		if (i % 8 == 0)
+			std::cout << std::endl;
+		else
+			std::cout << matrix[i] << " ";
+	}
+}
 
-	total_hits = calculateHits(iterations);
-
-	// gather data from other nodes
-	for (int i = 1; i < world_size; i++) 
+// print a 2 dimensional array
+template <typename Type, size_t sizeRow, size_t sizeColumn>
+void printMatrix(Type(&arr)[sizeRow][sizeColumn])
+{
+	for (int i = 0; i < sizeRow; i++) 
 	{
-		MPI_Recv(&hits, 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		total_hits += hits;
+		for (int j = 0; j < sizeColumn; j++)
+		{
+			std::cout << arr[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+}
+
+// returns the dot product of two int matricies
+template <size_t rowsA, size_t colsA, size_t rowsB, size_t colsB>
+int dotProduct(int(&matrixA)[rowsA][colsA], int row, int(&matrixB)[rowsB][colsB], int column)
+{
+	int result = 0;
+	for (size_t i = 0; i < colsA; i++)
+	{
+		result += matrixA[row][i] * matrixB[i][column];
+	}
+	return result;
+}
+
+// function that generates a matrix in binary form on disk
+void generateMatrixFile() {
+	// generate a matrix of values that need to be written to disk in the form of a one dimensional array this will write out an 8x8 matrix
+	double matrix[64] = {
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1
+	};
+
+	// open up a file for writing
+	/*
+	FILE *output;
+	fopen_s(&output, "matrix.dat", "wb");
+	*/
+
+	FILE *output = fopen("matrix.dat", "wb");
+	if (!output) {
+		return;
 	}
 
-	// calculate pi
-	pi = (double) total_hits * 4 / (iterations * world_size);
+	// do a simple fwrite to write the matrix to file
+	fwrite(matrix, sizeof(double), 64, output);
+
+
+	// close the file when we are finished writing
+	fclose(output);
+
+	printMatrixFromFile();
+
+}
+
+
+/* master node method */
+void coordinator(int world_size)
+{
+	int arr[8][8];
+	int arr2[8][8];
+	initIntMatrix(arr2);
+	initIntMatrix(arr);
+
+	printMatrix(arr);
+	printMatrix(arr2);
+
+	int dotproduct = dotProduct(arr, 0, arr2, 0);
+	std::cout << dotproduct << " ";
+
+
+
+
 	
-	// output result
-	std::cout.precision(15);
-	std::cout.setf(std::ios::fixed, std::ios::floatfield); // floatfield set to fixed
-	std::cout << "PI ~ "<< pi << std::endl; 
+
+
 	
 }
 
 /* slave node method */
-void participant(int iterations)
+void participant()
 {
-	int hits;
-	hits = calculateHits(iterations);
-
-	// send data to master node
-	MPI_Send(&hits, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+	
 }
 
 int main(int argc, char** argv) 
 {
 	MPI_Init(NULL, NULL);
-	int iterations = 0;
 	int world_size;
 
 
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	/* get the number of iterations*/
-	sscanf_s(argv[1], "%d", &iterations); 
+	/*  get the matricies */
+	// sscanf_s(argv[1], "%d", &iterations); 
 
 	
 	// master node 
 	if(world_rank == 0) 
 	{
 		auto start_time = MPI_Wtime();
-		coordinator(iterations/world_size, world_size);
+		coordinator(world_size);
 		auto end_time = MPI_Wtime();
 		// output the time
 		std::cout << "time in s:" << end_time-start_time << std::endl;
@@ -112,7 +168,7 @@ int main(int argc, char** argv)
 	// other nodes
 	else
 	{
-		participant(iterations/world_size);
+		participant();
 	}
 
 	MPI_Finalize();
