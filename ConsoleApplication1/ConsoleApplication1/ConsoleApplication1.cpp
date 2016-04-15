@@ -26,7 +26,8 @@ void initIntMatrix(int(&arr)[sizeRow][sizeColumn])
 	{
 		for (int j = 0; j < sizeColumn; j++)
 		{
-			arr[i][j] = (int) fRand(0,50);
+			arr[i][j] = 1;
+				//(int) fRand(0,50);
 		}
 	}
 }
@@ -65,16 +66,60 @@ void printMatrix(Type(&arr)[sizeRow][sizeColumn])
 }
 
 // returns the dot product of two int matricies
-template <size_t rowsA, size_t colsA, size_t rowsB, size_t colsB>
-int dotProduct(int(&matrixA)[rowsA][colsA], int row, int(&matrixB)[rowsB][colsB], int column)
+template <size_t sizeRowA, size_t sizeColumnA, size_t sizeRowB, size_t sizeColumnB>
+int dotProduct_two_dimensional(int(&matrixA)[sizeRowA][sizeColumnA], int row, int(&matrixB)[sizeRowB][sizeColumnB], int column)
 {
+	// only works if the size of the row of A is equal to size of column of B
+	if(sizeRowA != sizeColumnB)
+	{
+		return EXIT_FAILURE;
+	}
 	int result = 0;
-	for (size_t i = 0; i < colsA; i++)
+	for (size_t i = 0; i < sizeColumnA; i++)
 	{
 		result += matrixA[row][i] * matrixB[i][column];
 	}
 	return result;
 }
+
+// returns the dot product of two int matricies
+template <size_t sizeRowA, size_t sizeRowB, size_t sizeColumnB>
+int dotProduct(int(&arrayA)[sizeRowA], int(&arrayB)[sizeRowB][sizeColumnB], int column)
+{
+	// only works if the size of the row of A is equal to size of column of B
+	if (sizeRowA != sizeColumnB)
+	{
+		return EXIT_FAILURE;
+	}
+
+	int result = 0;
+
+	for (int i = 0; i < sizeRowA; i++)
+	{
+		result += arrayA[i] * arrayB[i][column];
+	}
+	return result;
+}
+
+
+
+template <size_t sizeRowA, size_t sizeRowB, size_t sizeColumnB>
+int* multiplyStripe(int(&arrayA)[sizeRowA], int(&arrayB)[sizeRowB][sizeColumnB])
+{
+	int* array_stripe_C = new int[sizeColumnB];
+
+	for(int i = 0; i < sizeColumnB; i++)
+	{
+		array_stripe_C[i] = dotProduct(arrayA, arrayB, i);
+	}
+
+
+	return array_stripe_C;
+}
+
+ int(&fillarr(int(&arr)[5]))[5]{ // no decay; argument must be size 5
+	 return arr;
+ }
 
 // function that generates a matrix in binary form on disk
 void generateMatrixFile() {
@@ -118,15 +163,35 @@ void coordinator(int world_size)
 {
 	int arr[8][8];
 	int arr2[8][8];
+
+
+	
 	initIntMatrix(arr2);
 	initIntMatrix(arr);
+
+	arr2[0][0] = 5; // testing
 
 	printMatrix(arr);
 	printMatrix(arr2);
 
-	int dotproduct = dotProduct(arr, 0, arr2, 0);
-	std::cout << dotproduct << " ";
+	//int dotproduct = dotProduct_two_dimensional(arr, 0, arr2, 0);
+	// std::cout << dotproduct << " ";
 
+
+	int arr3[8][8];
+	int* result = new int[8];
+
+	for (int i = 0; i < 8; i++)
+	{
+		result = multiplyStripe(arr[i], arr2);	
+		for (int j = 0; j < sizeof(result); j++)
+		{
+			arr3[i][j] = result[j];
+		}
+	}
+
+	printMatrix(arr3);
+	
 
 
 
