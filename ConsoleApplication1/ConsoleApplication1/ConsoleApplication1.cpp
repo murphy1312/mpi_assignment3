@@ -11,8 +11,8 @@
 #include <cstdio>
 
 
-
 int world_rank;
+int **arr;
 
 
 double fRand(double fMin, double fMax)
@@ -79,11 +79,11 @@ void printMatrixFromFile(Type** arr, int size)
 
 // print a 2 dimensional array
 template <typename Type>
-void printMatrix(Type** arr, int matrix_size)
+void printMatrix(Type** arr, int n, int m)
 {
-	for (int i = 0; i < matrix_size; i++)
+	for (int i = 0; i < n; i++)
 	{
-		for (int j = 0; j < matrix_size; j++)
+		for (int j = 0; j < m; j++)
 		{
 			std::cout << arr[i][j] << " ";
 		}
@@ -137,6 +137,8 @@ int malloc2dint(int ***array, int n, int m) {
 		(*array)[i] = &(p[i*m]);
 
 	return 0;
+
+	
 }
 
 int free2dint(int ***array) 
@@ -213,49 +215,17 @@ void generateMatrixFile(Type** arr, int matrix_size)
 /* master node method */
 void coordinator(int world_size, int matrix_size)
 {
-	
-	/*
-	// B complete
-	int **arr2 = new int*[matrix_size];
-	for (int w = 0; w < matrix_size; w++)
-	{
-		arr2[w] = new int[matrix_size];
-	}
-	// C complete
-	int **arr3 = new int*[matrix_size];
-	for (int r = 0; r < matrix_size; r++)
-	{
-		arr3[r] = new int[matrix_size];
-	}
-	
-	// fill
-	initIntMatrix(arr2);
-	
-
-	
-	int matrix_size_1d = matrix_size * matrix_size;
-
-	int **partition = new int*[size_for_each_node];
-	for (int r = 0; r < size_for_each_node; r++)
-	{
-		arr3[r] = new int[matrix_size];
-	}
-
-
-	// matrix size broadcast
-	MPI_Bcast(&matrix_size_1d, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-
-	*/
 
 	// A complete
-	int **arr = new int*[matrix_size];
+	arr = new int*[matrix_size];
 	for (int i = 0; i < matrix_size; i++)
 	{
 		arr[i] = new int[matrix_size];
 	}
-	initIntMatrix(arr, matrix_size);
 
+	initIntMatrix(arr, matrix_size);
+	/*printMatrix(arr, matrix_size, matrix_size);
+*/
 
 	// broadcast size of an individual row 
 	MPI_Bcast(&matrix_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -267,30 +237,44 @@ void coordinator(int world_size, int matrix_size)
 	// Broadcast B
 	MPI_Bcast(&(arrB[0][0]), matrix_size*matrix_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-	std::cout << "node: " << world_rank << std::endl;
-	printMatrix(arrB, matrix_size);
+	/*std::cout << "node: " << world_rank << std::endl;
+	printMatrix(arrB, matrix_size, matrix_size);
 	//printMatrix(arr);
-	std::cout << std::endl;
+	std::cout << std::endl;*/
 
 
 	int size_for_each_node = matrix_size / world_size;
 	// broadcast the partition size / stripe size
 	MPI_Bcast(&size_for_each_node, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-	int **arrA;
-	malloc2dint(&arrA, size_for_each_node, matrix_size);
+	/*int **arrA;
+	malloc2dint(&arrA, size_for_each_node, matrix_size);*/
 
 	int ** arrC;
 	malloc2dint(&arrC, size_for_each_node, matrix_size);
 
 
+	int** matrix = new int *[matrix_size];
+	int *data = new int[matrix_size*matrix_size];
+	for (int i = 0; i < matrix_size; i++)
+		matrix[i] = &(data[matrix_size*i]);
 
+	initIntMatrix(matrix, matrix_size);
+
+	printMatrix(matrix, matrix_size, matrix_size);
+
+	/*int** arrA = new int *[matrix_size];
+	int *data2 = new int[matrix_size*matrix_size];
+	for (int i = 0; i < matrix_size; i++)
+		matrix[i] = &(data[matrix_size*i]);*/
+
+	int *partition = new int[size_for_each_node*matrix_size];
 
 	// scatter A
 	// scatter the partition to each node
-	MPI_Scatter(arr, size_for_each_node, MPI_INT, arrA, size_for_each_node, MPI_INT, 0, MPI_COMM_WORLD);
+	 MPI_Scatter(matrix, matrix_size * size_for_each_node, MPI_INT, partition, matrix_size * size_for_each_node, MPI_INT, 0, MPI_COMM_WORLD);
 
-
+	// printMatrix(arrA, size_for_each_node, matrix_size);
 	
 	
 	
@@ -317,12 +301,25 @@ void coordinator(int world_size, int matrix_size)
 	// generateMatrixFile(arr);
 
 	// printMatrixFromFile(arr, matrix_size);
-
+/*
 	free2dint(&arrA);
 	free2dint(&arrB);
-	free2dint(&arrC);
+	free2dint(&arrC);*/
 
 	
+}
+
+void print1darrayAs2d(int n, int m, int* arr)
+{
+	for (int i = 0; i < m*n; i++)
+	{
+
+		std::cout << " " << arr[i];
+		if((i+1)% n == 0)
+		{
+			std::cout << std::endl;
+		}
+	}
 }
 
 /* slave node method */
@@ -333,59 +330,66 @@ void participant()
 	
 	// broadcast the matrix size
 	MPI_Bcast(&matrix_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	std::cout << "matrix_size: " << matrix_size << std::endl;
+/*	std::cout << "matrix_size: " << matrix_size << std::endl;*/
 
 	int **arrB;
 	malloc2dint(&arrB, matrix_size, matrix_size);
 
-	int **arr;
-	malloc2dint(&arr, matrix_size, matrix_size);
-
-
-
-
-	
-
-	// scatter A 
-	// MPI_Scatter(arr, size_for_each_node, MPI_INT, arr3, size_for_each_node,
-	//	MPI_INT, 0, MPI_COMM_WORLD);
-
 	// broadcast B
 	MPI_Bcast(&(arrB[0][0]), matrix_size*matrix_size, MPI_INT, 0, MPI_COMM_WORLD);
 
-	/*std::cout << "node: " << world_rank << std::endl;
-	printMatrix(arrB, matrix_size);
+	/*
+	std::cout << "node: " << world_rank << std::endl;
+	printMatrix(arrB, matrix_size, matrix_size);
 	//printMatrix(arr);
-	std::cout << std::endl;*/
+	std::cout << std::endl;
+	*/
 
 
 	int size_for_each_node = 0;
 	// broadcast the partition size / stripe size
 	MPI_Bcast(&size_for_each_node, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	std::cout << " " << size_for_each_node << std::endl;
-
+	/*std::cout << " " << size_for_each_node << std::endl;
+*/
 	int **arrA;
 	malloc2dint(&arrA, size_for_each_node, matrix_size);
 
 	int ** arrC;
 	malloc2dint(&arrC, size_for_each_node, matrix_size);
 
-
-	MPI_Scatter(arr, size_for_each_node, MPI_INT, arrA, size_for_each_node, MPI_INT, 0, MPI_COMM_WORLD);
-
-
-	printMatrix(arrA, matrix_size);
+	int ** arr;
+	malloc2dint(&arr, matrix_size, matrix_size);
 
 
+	int** matrix = new int *[matrix_size];
+	int *data = new int[matrix_size*matrix_size];
+	for (int i = 0; i < matrix_size; i++)
+		matrix[i] = &(data[matrix_size*i]);
+
+/*
+	int** arrA = new int *[matrix_size];
+	int *data2 = new int[matrix_size*matrix_size];
+	for (int i = 0; i < matrix_size; i++)
+		matrix[i] = &(data[matrix_size*i]);*/
+
+	int *partition = new int[size_for_each_node*matrix_size];
+
+	MPI_Scatter(matrix, matrix_size * size_for_each_node, MPI_INT, partition, matrix_size * size_for_each_node, MPI_INT, 0, MPI_COMM_WORLD);
+
+	print1darrayAs2d(matrix_size, size_for_each_node, partition);
+
+	// printMatrix(arrA, matrix_size, matrix_size);
+
+
+	// Matrix test1 = new Matrix(arrA);
 
 
 
 
 
-
-	free2dint(&arrA);
+	/*free2dint(&arrA);
 	free2dint(&arrB);
-	free2dint(&arrC);
+	free2dint(&arrC);*/
 
 	
 
@@ -427,22 +431,4 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-
-
-/*// returns the dot product of two int matricies
-template <size_t sizeRowA, size_t sizeColumnA, size_t sizeRowB, size_t sizeColumnB>
-int dotProduct_two_dimensional(int(&matrixA)[sizeRowA][sizeColumnA], int row, int(&matrixB)[sizeRowB][sizeColumnB], int column)
-{
-	// only works if the size of the row of A is equal to size of column of B
-	if(sizeRowA != sizeColumnB)
-	{
-		return EXIT_FAILURE;
-	}
-	int result = 0;
-	for (size_t i = 0; i < sizeColumnA; i++)
-	{
-		result += matrixA[row][i] * matrixB[i][column];
-	}
-	return result;
-}*/
 
