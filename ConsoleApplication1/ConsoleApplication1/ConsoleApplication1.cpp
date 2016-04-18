@@ -10,6 +10,21 @@
 #include <cmath>
 #include <cstdio>
 
+template <typename Type>
+void printMatrix(Type** arr, int n, int m);
+int free2dint(int ***array);
+double fRand(double fMin, double fMax);
+void fillIntMatrixRnd(int** arr, int matrix_size);
+int** readMatrixFromFile(const std::string file, int matrix_size);
+int dotProduct(int* arrayA, int** arrayB, int column, int matrix_size);
+void coordinator(int world_size, int matrix_size);
+int dotProduct(int* arrayA, int** arrayB, int column, int matrix_size);
+int* multiplyStripe(int* arrayA, int** arrayB, int matrix_size);
+int malloc2dint(int ***array, int n, int m);
+void print1darrayAs2d(int n, int m, int* arr);
+void participant();
+
+
 
 int world_rank;
 int **arr;
@@ -77,7 +92,6 @@ void printMatrixFromFile(Type** arr, int size)
 	}
 
 }
-
 // print a 2 dimensional array
 template <typename Type>
 void printMatrix(Type** arr, int n, int m)
@@ -93,12 +107,33 @@ void printMatrix(Type** arr, int n, int m)
 	std::cout << std::endl;
 }
 
+
+int** readMatrixFromFile(const std::string file, int matrix_size)
+{
+	int** arr = new int *[matrix_size];
+	int *dataC = new int[matrix_size*matrix_size];
+	for (int i = 0; i < matrix_size; i++)
+		arr[i] = &(dataC[matrix_size*i]);
+
+	FILE *input;
+	fopen_s(&input, file.c_str(), "rb");
+	if (!input) 
+	{
+		return NULL;
+	}
+	fread(&(arr[0][0]), sizeof(int), matrix_size*matrix_size, input);
+	fclose(input);
+	
+	printMatrix(arr, matrix_size, matrix_size);
+
+	return arr;
+
+}
+
 // returns the dot product of two int matricies
 int dotProduct(int* arrayA, int** arrayB, int column, int matrix_size)
 {
-
 	int result = 0;
-
 	for (int i = 0; i < matrix_size; i++)
 	{
 		result += arrayA[i] * arrayB[i][column];
@@ -166,68 +201,10 @@ void print1darrayAs2d(int n, int m, int* arr)
 	}
 }
 
-// function that generates a matrix in binary form on disk
-template <typename Type>
-void generateMatrixFile(Type** arr, int matrix_size) 
-{
-	// generate a matrix of values that need to be written to disk in the form of a one dimensional array this will write out an 8x8 matrix
-	/*
-	double matrix[64] = 
-	{
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1
-	};
-	*/
-
-	// convert to 1d array
-	double* p = new double[matrix_size*matrix_size];
-
-	for (int i = 0; i < matrix_size; i++)
-	{
-		for (int j = 0; j < matrix_size; j++)
-		{
-			p[i * matrix_size + matrix_size] = arr[i][j];
-			std::cout << "p[i * matrix_size + matrix_size] " << p[i * matrix_size + matrix_size] << " " << std::endl;
-		}
-	}
-
-	// open up a file for writing
-	FILE *output;
-	fopen_s(&output, "matrix.txt", "wb");
-	
-	/*
-	FILE *output = fopen("matrix.dat", "wb");
-	*/
-
-	if (!output) 
-	{
-		return;
-	}
-
-
-	std::cout << "generateMatrixFile sizeof(Type) " << sizeof(double) << " ";
-	std::cout << "generateMatrixFile matrix_size*matrix_size " << matrix_size*matrix_size << " " << std::endl;
-	// do a simple fwrite to write the matrix to file
-	fwrite(p, sizeof(double), matrix_size*matrix_size, output);
-
-
-	// close the file when we are finished writing
-	fclose(output);
-
-	// printMatrix(p);
-
-}
-
-
 /* master node method */
 void coordinator(int world_size, int matrix_size)
 {
+	readMatrixFromFile("matrix.dat", matrix_size);
 
 	// broadcast size of an individual row 
 	MPI_Bcast(&matrix_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -260,7 +237,7 @@ void coordinator(int world_size, int matrix_size)
 
 
 	matrix[0][0] = 5;
-	matrix[7][7] = 5;
+	// matrix[7][7] = 5;
 
 	// original matrix A
 	printMatrix(matrix, matrix_size, matrix_size);
@@ -424,7 +401,7 @@ int main(int argc, char** argv)
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	/*  get the matricies */
+	//  get the matricies 
 	sscanf_s(argv[1], "%d", &matrix_size);
 
 	
@@ -448,5 +425,6 @@ int main(int argc, char** argv)
 	MPI_Finalize();
 	return 0;
 }
+
 
 

@@ -32,5 +32,8 @@
     <ClCompile Include="ConsoleApplication1.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="GenerateMatrixFile.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
