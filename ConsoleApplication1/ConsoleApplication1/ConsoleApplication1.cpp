@@ -155,7 +155,8 @@ int* multiplyStripe(int* arrayA, int** arrayB, int matrix_size)
 	return array_stripe_C;
 }
 
-int malloc2dint(int ***array, int n, int m) {
+int malloc2dint(int ***array, int n, int m) 
+{
 
 	/* allocate the n*m contiguous items */
 	int *p = (int *)malloc(n*m*sizeof(int));
@@ -173,8 +174,6 @@ int malloc2dint(int ***array, int n, int m) {
 		(*array)[i] = &(p[i*m]);
 
 	return 0;
-
-	
 }
 
 int free2dint(int ***array) 
@@ -204,15 +203,16 @@ void print1darrayAs2d(int n, int m, int* arr)
 /* master node method */
 void coordinator(int world_size, int matrix_size)
 {
-	readMatrixFromFile("matrix.dat", matrix_size);
+	// get matrixA and matrixB from files
+	int **arrA = readMatrixFromFile("matrix.dat", matrix_size);
+	int **arrB = readMatrixFromFile("matrix2.dat", matrix_size);
+
+	printMatrix(arrA, matrix_size, matrix_size);
+
+	printMatrix(arrB, matrix_size, matrix_size);
 
 	// broadcast size of an individual row 
 	MPI_Bcast(&matrix_size, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	
-
-	int **arrB;
-	malloc2dint(&arrB, matrix_size, matrix_size);
-	fillIntMatrixRnd(arrB, matrix_size);
 	// Broadcast B
 	MPI_Bcast(&(arrB[0][0]), matrix_size*matrix_size, MPI_INT, 0, MPI_COMM_WORLD);
 
@@ -227,27 +227,17 @@ void coordinator(int world_size, int matrix_size)
 		arrC[i] = &(dataC[matrix_size*i]);
 
 
-	int** matrix = new int *[matrix_size];
-	int *data = new int[matrix_size*matrix_size];
-	for (int i = 0; i < matrix_size; i++)
-		matrix[i] = &(data[matrix_size*i]);
-
-
-	fillIntMatrixRnd(matrix, matrix_size);
-
-
-	matrix[0][0] = 5;
 	// matrix[7][7] = 5;
 
 	// original matrix A
-	printMatrix(matrix, matrix_size, matrix_size);
+	
 
 
 	// result array for this nodes A
-	int** arrA = new int *[size_for_each_node];
+	int** arrResult = new int *[size_for_each_node];
 	int *data2 = new int[size_for_each_node*matrix_size];
 	for (int i = 0; i < size_for_each_node; i++)
-		arrA[i] = &(data2[matrix_size*i]);
+		arrResult[i] = &(data2[matrix_size*i]);
 
 
 	int *partition = new int[size_for_each_node*matrix_size];
@@ -255,7 +245,7 @@ void coordinator(int world_size, int matrix_size)
 
 	// scatter A
 	// scatter the partition to each node
-	 MPI_Scatter(&(matrix[0][0]), matrix_size * size_for_each_node, MPI_INT, partition, matrix_size * size_for_each_node, MPI_INT, 0, MPI_COMM_WORLD);
+	 MPI_Scatter(&(arrA[0][0]), matrix_size * size_for_each_node, MPI_INT, partition, matrix_size * size_for_each_node, MPI_INT, 0, MPI_COMM_WORLD);
 
 	 // printMatrix(arrA, size_for_each_node, matrix_size);
 	
@@ -266,7 +256,7 @@ void coordinator(int world_size, int matrix_size)
 	 {
 		 for (int j = 0; j < matrix_size; j++)
 		 {
-			 arrA[i][j] = partition[j*size_for_each_node + i];
+			 arrResult[i][j] = partition[j*size_for_each_node + i];
 		 }
 	 }
 
@@ -278,7 +268,7 @@ void coordinator(int world_size, int matrix_size)
 
 	 for (int i = 0; i < size_for_each_node; i++)
 	 {
-		 result = multiplyStripe(arrA[i], arrB, matrix_size);
+		 result = multiplyStripe(arrResult[i], arrB, matrix_size);
 		 for (int j = 0; j < matrix_size; j++)
 		 {
 			 arrC[i][j] = result[j];
@@ -390,6 +380,7 @@ void participant()
 	free2dint(&arrC);*/
 
 }
+
 
 int main(int argc, char** argv) 
 {

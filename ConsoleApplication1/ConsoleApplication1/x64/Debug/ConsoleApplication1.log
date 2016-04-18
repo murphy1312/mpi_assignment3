@@ -1,8 +1,10 @@
-﻿Der Buildvorgang wurde am 4/18/2016 5:34:08 PM gestartet.
+﻿Der Buildvorgang wurde am 4/18/2016 5:58:35 PM gestartet.
      1>Projekt "C:\Data\dublin\DistributedSystems\mpi_assignment3\mpi_assignment3\ConsoleApplication1\ConsoleApplication1\ConsoleApplication1.vcxproj" auf Knoten "2", Build Ziel(e).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files\Microsoft MPI\Inc" /ZI /nologo /W3 /WX- /sdl /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Yu"stdafx.h" /Fp"x64\Debug\ConsoleApplication1.pch" /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt ConsoleApplication1.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /I"C:\Program Files\Microsoft MPI\Inc" /ZI /nologo /W3 /WX- /sdl /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Yu"stdafx.h" /Fp"x64\Debug\ConsoleApplication1.pch" /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt ConsoleApplication1.cpp GenerateMatrixFile.cpp
+         GenerateMatrixFile.cpp
          ConsoleApplication1.cpp
+         Code wird generiert...
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Data\dublin\DistributedSystems\mpi_assignment3\mpi_assignment3\ConsoleApplication1\x64\Debug\ConsoleApplication1.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\Program Files\Microsoft MPI\Lib\amd64" msmpi.lib msmpifec.lib msmpifmc.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"C:\Data\dublin\DistributedSystems\mpi_assignment3\mpi_assignment3\ConsoleApplication1\x64\Debug\ConsoleApplication1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Data\dublin\DistributedSystems\mpi_assignment3\mpi_assignment3\ConsoleApplication1\x64\Debug\ConsoleApplication1.lib" /MACHINE:X64 x64\Debug\ConsoleApplication1.obj
          x64\Debug\GenerateMatrixFile.obj
@@ -12,4 +14,4 @@
 
 Der Buildvorgang wurde erfolgreich ausgeführt.
 
-Verstrichene Zeit 00:00:00.92
+Verstrichene Zeit 00:00:01.34
